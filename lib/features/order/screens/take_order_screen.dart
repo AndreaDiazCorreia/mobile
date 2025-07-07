@@ -13,6 +13,7 @@ import 'package:mostro_mobile/shared/widgets/order_cards.dart';
 import 'package:mostro_mobile/shared/providers/order_repository_provider.dart';
 import 'package:mostro_mobile/shared/utils/currency_utils.dart';
 import 'package:mostro_mobile/shared/widgets/custom_card.dart';
+import 'package:mostro_mobile/generated/l10n.dart';
 
 class TakeOrderScreen extends ConsumerWidget {
   final String orderId;
@@ -31,24 +32,24 @@ class TakeOrderScreen extends ConsumerWidget {
       backgroundColor: AppTheme.backgroundDark,
       appBar: OrderAppBar(
           title: orderType == OrderType.buy
-              ? 'BUY ORDER DETAILS'
-              : 'SELL ORDER DETAILS'),
+              ? S.of(context)!.buyOrderDetails
+              : S.of(context)!.sellOrderDetails),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             const SizedBox(height: 16),
-            _buildSellerAmount(ref, order!),
+            _buildSellerAmount(ref, order!, context),
             const SizedBox(height: 16),
-            _buildPaymentMethod(order),
+            _buildPaymentMethod(order, context),
             const SizedBox(height: 16),
-            _buildCreatedOn(order),
+            _buildCreatedOn(order, context),
             const SizedBox(height: 16),
             _buildOrderId(context),
             const SizedBox(height: 16),
-            _buildCreatorReputation(order),
+            _buildCreatorReputation(order, context),
             const SizedBox(height: 24),
-            _buildCountDownTime(order.expirationDate),
+            _buildCountDownTime(order.expirationDate, context),
             const SizedBox(height: 36),
             _buildActionButtons(context, ref, order),
           ],
@@ -57,49 +58,21 @@ class TakeOrderScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSellerAmount(WidgetRef ref, NostrEvent order) {
-    final selling = orderType == OrderType.sell ? 'Selling' : 'Buying';
+  Widget _buildSellerAmount(
+      WidgetRef ref, NostrEvent order, BuildContext context) {
+    final selling = orderType == OrderType.sell
+        ? S.of(context)!.selling
+        : S.of(context)!.buying;
     final currencyFlag = CurrencyUtils.getFlagFromCurrency(order.currency!);
     final amountString = '${order.fiatAmount} ${order.currency} $currencyFlag';
-    final priceText = order.amount == '0' ? 'at market price' : '';
+    final priceText = order.amount == '0' ? S.of(context)!.atMarketPrice : '';
 
-    return CustomCard(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Someone is $selling Sats',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Text(
-                'for $amountString',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
-              ),
-              if (priceText.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                Text(
-                  priceText,
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ],
-      ),
+    return OrderAmountCard(
+      title: S.of(context)!.someoneIsSelling(selling),
+      amount: order.fiatAmount.toString(),
+      currency: order.currency!,
+      currencyFlag: currencyFlag,
+      priceText: priceText,
     );
   }
 
@@ -109,7 +82,7 @@ class TakeOrderScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCountDownTime(DateTime expiration) {
+  Widget _buildCountDownTime(DateTime expiration, BuildContext context) {
     Duration countdown = Duration(hours: 0);
     final now = DateTime.now();
     if (expiration.isAfter(now)) {
@@ -123,28 +96,28 @@ class TakeOrderScreen extends ConsumerWidget {
           countdownRemaining: countdown.inHours,
         ),
         const SizedBox(height: 16),
-        Text('Time Left: ${countdown.toString().split('.')[0]}'),
+        Text(S.of(context)!.timeLeft(countdown.toString().split('.')[0])),
       ],
     );
   }
 
-  Widget _buildPaymentMethod(NostrEvent order) {
+  Widget _buildPaymentMethod(NostrEvent order, BuildContext context) {
     final methods = order.paymentMethods.isNotEmpty
         ? order.paymentMethods.join(', ')
-        : 'No payment method';
+        : S.of(context)!.noPaymentMethod;
 
     return PaymentMethodCard(
       paymentMethod: methods,
     );
   }
 
-  Widget _buildCreatedOn(NostrEvent order) {
+  Widget _buildCreatedOn(NostrEvent order, BuildContext context) {
     return CreatedDateCard(
       createdDate: formatDateTime(order.createdAt!),
     );
   }
 
-  Widget _buildCreatorReputation(NostrEvent order) {
+  Widget _buildCreatorReputation(NostrEvent order, BuildContext context) {
     final ratingInfo = order.rating;
 
     final rating = ratingInfo?.totalRating ?? 0.0;
@@ -163,8 +136,9 @@ class TakeOrderScreen extends ConsumerWidget {
     final orderDetailsNotifier =
         ref.read(orderNotifierProvider(orderId).notifier);
 
-    final buttonText =
-        orderType == OrderType.buy ? 'SELL BITCOIN' : 'BUY BITCOIN';
+    final buttonText = orderType == OrderType.buy
+        ? S.of(context)!.sellBitcoin
+        : S.of(context)!.buyBitcoin;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -173,7 +147,7 @@ class TakeOrderScreen extends ConsumerWidget {
           child: OutlinedButton(
             onPressed: () => Navigator.of(context).pop(),
             style: AppTheme.theme.outlinedButtonTheme.style,
-            child: const Text('CLOSE'),
+            child: Text(S.of(context)!.close),
           ),
         ),
         const SizedBox(width: 16),
@@ -191,20 +165,21 @@ class TakeOrderScreen extends ConsumerWidget {
                     return StatefulBuilder(
                       builder: (context, setState) {
                         return AlertDialog(
-                          title: const Text('Enter Amount'),
+                          title: Text(S.of(context)!.enterAmount),
                           content: TextField(
                             controller: _fiatAmountController,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
-                              hintText:
-                                  'Enter an amount between ${order.fiatAmount.minimum} and ${order.fiatAmount.maximum}',
+                              hintText: S.of(context)!.enterAmountBetween(
+                                  order.fiatAmount.minimum.toString(),
+                                  order.fiatAmount.maximum.toString()),
                               errorText: errorText,
                             ),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(null),
-                              child: const Text('Cancel'),
+                              child: Text(S.of(context)!.cancel),
                             ),
                             ElevatedButton(
                               key: const Key('submitAmountButton'),
@@ -213,7 +188,8 @@ class TakeOrderScreen extends ConsumerWidget {
                                     _fiatAmountController.text.trim());
                                 if (inputAmount == null) {
                                   setState(() {
-                                    errorText = "Please enter a valid number.";
+                                    errorText =
+                                        S.of(context)!.pleaseEnterValidNumber;
                                   });
                                 } else if (inputAmount <
                                         order.fiatAmount.minimum ||
@@ -221,14 +197,18 @@ class TakeOrderScreen extends ConsumerWidget {
                                         inputAmount >
                                             order.fiatAmount.maximum!)) {
                                   setState(() {
-                                    errorText =
-                                        "Amount must be between ${order.fiatAmount.minimum} and ${order.fiatAmount.maximum}.";
+                                    errorText = S
+                                        .of(context)!
+                                        .amountMustBeBetween(
+                                            order.fiatAmount.minimum.toString(),
+                                            order.fiatAmount.maximum
+                                                .toString());
                                   });
                                 } else {
                                   Navigator.of(context).pop(inputAmount);
                                 }
                               },
-                              child: const Text('Submit'),
+                              child: Text(S.of(context)!.submit),
                             ),
                           ],
                         );
