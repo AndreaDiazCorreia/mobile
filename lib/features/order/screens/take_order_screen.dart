@@ -29,21 +29,25 @@ class TakeOrderScreen extends ConsumerWidget {
     final order = ref.watch(eventProvider(orderId));
 
     return Scaffold(
+
       backgroundColor: AppTheme.backgroundDark,
       appBar: OrderAppBar(
           title: orderType == OrderType.buy
               ? S.of(context)!.buyOrderDetails
               : S.of(context)!.sellOrderDetails),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             const SizedBox(height: 16),
             _buildSellerAmount(ref, order!, context),
+
             const SizedBox(height: 16),
             _buildPaymentMethod(order, context),
             const SizedBox(height: 16),
             _buildCreatedOn(order, context),
+
             const SizedBox(height: 16),
             _buildOrderId(context),
             const SizedBox(height: 16),
@@ -57,6 +61,7 @@ class TakeOrderScreen extends ConsumerWidget {
       ),
     );
   }
+
 
   Widget _buildSellerAmount(
       WidgetRef ref, NostrEvent order, BuildContext context) {
@@ -73,12 +78,15 @@ class TakeOrderScreen extends ConsumerWidget {
       currency: order.currency!,
       currencyFlag: currencyFlag,
       priceText: priceText,
+
     );
   }
 
   Widget _buildOrderId(BuildContext context) {
+
     return OrderIdCard(
       orderId: orderId,
+
     );
   }
 
@@ -143,6 +151,7 @@ class TakeOrderScreen extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+
         Expanded(
           child: OutlinedButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -217,6 +226,7 @@ class TakeOrderScreen extends ConsumerWidget {
                   },
                 );
 
+
                 if (enteredAmount != null) {
                   if (orderType == OrderType.buy) {
                     await orderDetailsNotifier.takeBuyOrder(
@@ -252,6 +262,8 @@ class TakeOrderScreen extends ConsumerWidget {
             ),
             child: Text(buttonText),
           ),
+
+
         ),
       ],
     );

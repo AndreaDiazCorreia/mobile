@@ -15,8 +15,10 @@ import 'package:mostro_mobile/shared/widgets/order_cards.dart';
 import 'package:mostro_mobile/features/trades/widgets/mostro_message_detail_widget.dart';
 import 'package:mostro_mobile/shared/providers/session_notifier_provider.dart';
 import 'package:mostro_mobile/shared/widgets/mostro_reactive_button.dart';
+
 import 'package:mostro_mobile/shared/utils/currency_utils.dart';
 import 'package:mostro_mobile/data/models/session.dart';
+
 import 'package:mostro_mobile/generated/l10n.dart';
 
 class TradeDetailScreen extends ConsumerWidget {
@@ -43,7 +45,9 @@ class TradeDetailScreen extends ConsumerWidget {
     final isCreator = _isUserCreator(session, tradeState);
 
     return Scaffold(
+
       backgroundColor: AppTheme.backgroundDark,
+
       appBar: OrderAppBar(title: S.of(context)!.orderDetails),
       body: Builder(
         builder: (context) {
@@ -67,11 +71,13 @@ class TradeDetailScreen extends ConsumerWidget {
                   MostroMessageDetail(orderId: orderId),
                 ],
                 const SizedBox(height: 24),
+
                 _buildCountDownTime(
                     context,
                     orderPayload.expiresAt != null
                         ? orderPayload.expiresAt! * 1000
                         : null),
+
                 const SizedBox(height: 36),
                 Wrap(
                   alignment: WrapAlignment.center,
@@ -95,10 +101,13 @@ class TradeDetailScreen extends ConsumerWidget {
   }
 
   /// Builds a card showing the user is "selling/buying X sats for Y fiat" etc.
+
   Widget _buildSellerAmount(
       BuildContext context, WidgetRef ref, OrderState tradeState) {
+
     final session = ref.watch(sessionProvider(orderId));
     final isPending = tradeState.status == Status.pending;
+
 
     // Determine if the user is the creator of the order based on role and order type
     final isCreator = _isUserCreator(session, tradeState);
@@ -155,10 +164,13 @@ class TradeDetailScreen extends ConsumerWidget {
     // For non-pending orders or orders not created by the user, use the original display
     final isSellingRole = session!.role == Role.seller;
 
+
     // If `orderPayload.amount` is 0, the trade is "at market price"
     final isZeroAmount = (tradeState.order!.amount == 0);
     final satText = isZeroAmount ? '' : ' ${tradeState.order!.amount}';
     final priceText = isZeroAmount ? ' ${S.of(context)!.atMarketPrice}' : '';
+
+
 
     final premium = tradeState.order!.premium;
     final premiumText = premium == 0
@@ -167,11 +179,13 @@ class TradeDetailScreen extends ConsumerWidget {
             ? S.of(context)!.withPremium(premium)
             : S.of(context)!.withDiscount(premium);
 
+
     final currencyFlag = CurrencyUtils.getFlagFromCurrency(
       tradeState.order!.fiatCode,
     );
     final amountString =
         '${tradeState.order!.fiatAmount} ${tradeState.order!.fiatCode} $currencyFlag';
+
 
     // Payment method
     final method = tradeState.order!.paymentMethod;
@@ -181,6 +195,7 @@ class TradeDetailScreen extends ConsumerWidget {
               tradeState.order!.createdAt! * 1000)
           : session.startTime ?? DateTime.now(),
     );
+
 
     return Column(
       children: [
@@ -204,13 +219,16 @@ class TradeDetailScreen extends ConsumerWidget {
           createdDate: timestamp,
         ),
       ],
+
     );
   }
 
   /// Show a card with the order ID that can be copied.
   Widget _buildOrderId(BuildContext context) {
+
     return OrderIdCard(
       orderId: orderId,
+
     );
   }
 
@@ -265,8 +283,10 @@ class TradeDetailScreen extends ConsumerWidget {
 
           if (tradeState.status == Status.active ||
               tradeState.status == Status.fiatSent) {
+
             if (tradeState.action ==
                 actions.Action.cooperativeCancelInitiatedByPeer) {
+
               cancelMessage = S.of(context)!.acceptCancelMessage;
             } else {
               cancelMessage = S.of(context)!.cooperativeCancelMessage;
